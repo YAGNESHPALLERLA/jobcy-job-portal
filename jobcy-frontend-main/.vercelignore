@@ -1,0 +1,12 @@
+# Vercel ignore file
+node_modules
+.next
+.env
+.env.local
+.env.production.local
+.env.development.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+*.tsbuildinfo
