@@ -1,0 +1,6 @@
+{
+  "buildCommand": "cd jobcy-frontend-main && npm run build",
+  "installCommand": "cd jobcy-frontend-main && npm install",
+  "outputDirectory": "jobcy-frontend-main/.next"
+}
+
