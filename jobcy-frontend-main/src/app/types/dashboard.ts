@@ -32,6 +32,9 @@ export interface Job {
   applicants: number;
   description: string;
   hasApplied?: boolean;
+  experienceLevel?: string; // "fresher" or "experienced"
+  applicationDeadline?: string;
+  qualifications?: string[];
 }
 
 export interface AppliedJob {
@@ -47,11 +50,13 @@ export interface AppliedJob {
 }
 
 export interface Connection {
-  id: string;
+  id: string | number;
   name: string;
   title?: string;
-  location?: string;
-  avatar?: string;
+  experience?: string;
+  education?: string;
+  skills?: string[];
+  status?: "seeking" | "open" | "employed";
   connected?: boolean;
 }
 

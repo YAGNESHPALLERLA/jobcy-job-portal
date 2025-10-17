@@ -10,8 +10,7 @@ const {
   updateApplicationStatus,
   getResume,
 } = require("../controllers/hrController");
-const { protect } = require("../middleware/authMiddleware");
-const { allowRoles } = require("../middleware/roleMiddleware");
+const { protect, allowRoles } = require("../middleware/authMiddleware");
 
 // HR routes - all prefixed with /api/hr in server.js
 router.get("/dashboard", protect, allowRoles("hr"), getDashboard);

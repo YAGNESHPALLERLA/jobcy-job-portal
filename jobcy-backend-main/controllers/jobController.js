@@ -6,6 +6,8 @@ const User = require("../models/User");
 // HR: Create a new job post
 exports.createJob = async (req, res) => {
   try {
+    console.log("Received job creation request body:", req.body);
+    
     const {
       title,
       description,
@@ -14,6 +16,8 @@ exports.createJob = async (req, res) => {
       salary,
       qualifications,
       type,
+      careerLevel,
+      experienceRange,
     } = req.body;
 
     // Check if user has HR role
@@ -21,7 +25,7 @@ exports.createJob = async (req, res) => {
       return res.status(403).json({ message: "Only HR users can post jobs" });
     }
 
-    const job = new Job({
+    console.log("✅ Creating job with received data:", {
       postedBy: req.user._id,
       title,
       description,
@@ -30,10 +34,58 @@ exports.createJob = async (req, res) => {
       salary,
       qualifications: qualifications || [],
       type,
+      careerLevel,
+      experienceRange,
       postedDate: new Date(),
     });
 
+    console.log("🔍 Career Level value:", careerLevel);
+    console.log("🔍 Experience Range value:", experienceRange);
+
+    // Validate required fields
+    if (!title || !description || !location || !type || !careerLevel) {
+      console.error("❌ Validation failed - missing fields:", {
+        title: !title,
+        description: !description,
+        location: !location,
+        type: !type,
+        careerLevel: !careerLevel
+      });
+      return res.status(400).json({ 
+        message: "Missing required fields",
+        missingFields: {
+          title: !title,
+          description: !description,
+          location: !location,
+          type: !type,
+          careerLevel: !careerLevel
+        }
+      });
+    }
+
+    const jobData = {
+      postedBy: req.user._id,
+      title,
+      description,
+      company,
+      location,
+      salary,
+      qualifications: qualifications || [],
+      type,
+      careerLevel,
+      experienceRange,
+      postedDate: new Date(),
+    };
+
+    console.log("📝 Job data to be saved:", jobData);
+
+    const job = new Job(jobData);
+
+    console.log("📝 Job object before save:", job.toObject());
+    
     await job.save();
+    
+    console.log("✅ Job saved successfully. Saved data:", job.toObject());
 
     // Populate the postedBy field for response
     await job.populate("postedBy", "name email");
@@ -49,6 +101,8 @@ exports.createJob = async (req, res) => {
         type: job.type,
         description: job.description,
         qualifications: job.qualifications,
+        careerLevel: job.careerLevel,
+        experienceRange: job.experienceRange,
         postedBy: job.postedBy.name,
         postedDate: job.postedDate,
       },
@@ -81,11 +135,15 @@ exports.getAllJobs = async (req, res) => {
   try {
     const { search, location, type } = req.query;
     const userId = req.user._id;
+    const userRole = req.user.role;
 
-    console.log("Fetching jobs for user:", userId);
+    console.log("Fetching jobs for user:", userId, "role:", userRole);
 
-    // Build filter object - only show active jobs
-    let filter = { status: "Active" };
+    // Build filter object - show all jobs for admin, only active for users
+    let filter = {};
+    if (userRole !== "admin") {
+      filter.status = "Active";
+    }
 
     // Add search filter
     if (search) {
@@ -132,6 +190,7 @@ exports.getAllJobs = async (req, res) => {
 
         return {
           id: job._id,
+          _id: job._id,
           title: job.title,
           company: companyName || "Unknown Company",
           location: job.location,
@@ -139,12 +198,15 @@ exports.getAllJobs = async (req, res) => {
           type: job.type,
           description: job.description,
           qualifications: job.qualifications,
+          careerLevel: job.careerLevel,
+          experienceRange: job.experienceRange,
           posted: job.postedDate,
           applicants: job.applicants || 0,
           status: job.status,
           hasApplied: !!application,
           applicationStatus: application?.status || null,
-          postedBy: job.postedBy?.name || "Unknown",
+          postedBy: userRole === "admin" ? job.postedBy?._id : job.postedBy?.name || "Unknown",
+          applicationDeadline: job.applicationDeadline,
         };
       })
     );
@@ -377,6 +439,30 @@ exports.deleteJob = async (req, res) => {
     res.json({ message: "Job deleted" });
   } catch (error) {
     console.error("Error deleting job:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Get applications for a specific job (Admin access)
+exports.getJobApplications = async (req, res) => {
+  try {
+    const jobId = req.params.jobId;
+
+    // Verify job exists
+    const job = await Job.findById(jobId);
+    if (!job) {
+      return res.status(404).json({ message: "Job not found" });
+    }
+
+    // Get all applications for this job
+    const applications = await Application.find({ jobId })
+      .populate("userId", "name email mobile currentLocation skills resume")
+      .populate("jobId", "title company location")
+      .sort({ createdAt: -1 });
+
+    res.json(applications);
+  } catch (error) {
+    console.error("Error fetching job applications:", error);
     res.status(500).json({ message: "Server error" });
   }
 };

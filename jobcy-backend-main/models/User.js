@@ -50,6 +50,11 @@ const userSchema = new mongoose.Schema(
       description: String,
       website: String,
     },
+    companyId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Company",
+      required: false,
+    },
     title: String,
     bio: String,
     skills: [String],
@@ -61,12 +66,25 @@ const userSchema = new mongoose.Schema(
     ],
     education: [
       {
+        id: String,
         institution: String,
         degree: String,
         fieldOfStudy: String,
-        startDate: Date,
-        endDate: Date,
+        startDate: String,
+        endDate: String,
         grade: String,
+      },
+    ],
+    experienceList: [
+      {
+        id: String,
+        position: String,
+        company: String,
+        location: String,
+        startDate: String,
+        endDate: String,
+        current: Boolean,
+        description: String,
       },
     ],
     projects: [
@@ -74,6 +92,7 @@ const userSchema = new mongoose.Schema(
         title: String,
         description: String,
         link: String,
+        technologies: [String],
       },
     ],
     profileCompletion: {
@@ -85,6 +104,7 @@ const userSchema = new mongoose.Schema(
 
     personalDetails: [
       {
+        dob: Date,
         gender: String,
         category: String,
         maritalStatus: String,

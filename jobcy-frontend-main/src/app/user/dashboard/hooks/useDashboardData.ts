@@ -33,6 +33,10 @@ interface RawJob {
   applicants?: number;
   description?: string;
   hasApplied?: boolean;
+  experienceLevel?: string;
+  careerLevel?: string;
+  applicationDeadline?: string;
+  qualifications?: string[];
 }
 
 interface RawUser {
@@ -45,6 +49,10 @@ interface RawUser {
   currentLocation?: string;
   location?: string;
   company?: { location?: string };
+  experience?: string;
+  education?: string;
+  skills?: string[];
+  status?: string;
 }
 
 interface RawInterview {
@@ -59,6 +67,17 @@ interface RawInterview {
   time?: string;
   type?: string;
   interviewer?: string;
+}
+
+interface ConnectedUser {
+  id: string;
+  name: string;
+  title: string;
+  experience?: string;
+  education?: string;
+  skills?: string[];
+  status?: string;
+  connected: boolean;
 }
 
 export function useDashboardData() {
@@ -86,6 +105,21 @@ export function useDashboardData() {
   // ✅ Common function to fetch dashboard data (called on mount and token change)
   const fetchDashboardData = useCallback(async (token: string) => {
     try {
+      // Check user role - only fetch for regular users
+      const userStr = localStorage.getItem("user");
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          if (user.role !== "user") {
+            console.log("⚠️ Not a user role, skipping user dashboard data fetch");
+            setIsLoading(false);
+            return;
+          }
+        } catch (error) {
+          console.error("Error parsing user from localStorage:", error);
+        }
+      }
+
       setIsLoading(true);
 
       // Fetch profile
@@ -99,7 +133,10 @@ export function useDashboardData() {
         }
       );
 
-      if (!profileRes.ok) throw new Error("Profile fetch failed");
+      if (!profileRes.ok) {
+        console.error("Profile fetch failed with status:", profileRes.status);
+        throw new Error("Profile fetch failed");
+      }
       const profileData = await profileRes.json();
 
       const mappedProfile: UserProfile = {
@@ -166,6 +203,9 @@ export function useDashboardData() {
             applicants: job.applicants || 0,
             description: job.description || "No description available",
             hasApplied: job.hasApplied || false,
+            experienceLevel: job.careerLevel || job.experienceLevel, // Map from backend's careerLevel field
+            applicationDeadline: job.applicationDeadline,
+            qualifications: job.qualifications,
           }))
         );
       }
@@ -182,12 +222,39 @@ export function useDashboardData() {
             id: u._id || u.id || Math.random().toString(),
             name: u.name || "Unknown User",
             title: u.professionalRole || u.role || u.title || "Job Seeker",
-            location:
-              u.currentLocation || u.location || u.company?.location || "Unknown location",
-            avatar: u.name?.[0]?.toUpperCase() || "U",
+            experience: u.experience || "Not specified",
+            education: u.education || "Not specified",
+            skills: u.skills || [],
+            status: u.status || "employed",
             connected: false,
           }))
         );
+      }
+
+      // Fetch connected users for chat
+      const connectedRes = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/connections/connections`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (connectedRes.ok) {
+        const connectedData = await connectedRes.json();
+        const connectedUsers = connectedData.map((u: ConnectedUser) => ({
+          id: u.id || Math.random().toString(),
+          name: u.name || "Unknown User",
+          title: u.title || "Job Seeker",
+          experience: u.experience || "Not specified",
+          education: u.education || "Not specified",
+          skills: u.skills || [],
+          status: u.status || "employed",
+          connected: true,
+        }));
+
+        // Merge connected users with existing connections
+        setConnections(prevConnections => {
+          const existingIds = new Set(prevConnections.map(c => c.id));
+          const newConnections = connectedUsers.filter((c: Connection) => !existingIds.has(c.id));
+          return [...prevConnections, ...newConnections];
+        });
       }
 
       // Fetch applied jobs
@@ -223,8 +290,21 @@ export function useDashboardData() {
       }
     } catch (error) {
       console.error("❌ Dashboard fetch error:", error);
-      applyMockData();
-      setUseMockData(true);
+      
+      // Only apply mock data if we're actually a user (not HR/admin)
+      const userStr = localStorage.getItem("user");
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          if (user.role === "user") {
+            console.log("📊 Using mock data as fallback for user");
+            applyMockData();
+            setUseMockData(true);
+          }
+        } catch (parseError) {
+          console.error("Error parsing user:", parseError);
+        }
+      }
     } finally {
       setIsLoading(false);
     }

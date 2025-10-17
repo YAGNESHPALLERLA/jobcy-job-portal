@@ -1,7 +1,7 @@
 // src/app/user/dashboard/page.tsx
 "use client";
 
-import { SetStateAction, useState } from "react";
+import { SetStateAction, useState, useEffect } from "react";
 import {
   Briefcase,
   Bell,
@@ -30,9 +30,31 @@ export default function JobSeekerDashboard() {
   const [activeTab, setActiveTab] = useState("profile");
   const [isDark, setIsDark] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [profileModalSection, setProfileModalSection] = useState<string>("personal");
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
+  // Check if user has correct role
+  useEffect(() => {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        if (user.role !== "user") {
+          console.log("⚠️ Unauthorized access to user dashboard. Redirecting...");
+          if (user.role === "hr") {
+            window.location.href = "/hr/dashboard";
+          } else if (user.role === "admin") {
+            window.location.href = "/admin/dashboard";
+          } else {
+            window.location.href = "/user/auth/login";
+          }
+        }
+      } catch (error) {
+        console.error("Error checking user role:", error);
+      }
+    }
+  }, []);
 
   const {
     isLoading,
@@ -131,6 +153,7 @@ export default function JobSeekerDashboard() {
 
               {/* Notifications */}
               <button
+                onClick={() => setActiveTab("notifications")}
                 className={`relative p-2.5 rounded-xl transition-colors ${
                   isDark ? "text-slate-400 hover:bg-slate-700 hover:text-white" : "text-slate-600 hover:bg-slate-100"
                 }`}
@@ -239,7 +262,10 @@ export default function JobSeekerDashboard() {
               education={education}
               experience={experience}
               isDark={isDark}
-              onEditProfile={() => setShowProfileModal(true)}
+              onEditProfile={(section = "personal") => {
+                setProfileModalSection(section);
+                setShowProfileModal(true);
+              }}
               updateProfile={updateProfile}
             />
           )}
@@ -282,6 +308,7 @@ export default function JobSeekerDashboard() {
           userProfile={userProfile}
           experience={experience}
           isDark={isDark}
+          initialSection={profileModalSection}
           onClose={() => setShowProfileModal(false)}
           onSave={async (data: Partial<UserProfile>) => {
             // normalize optional fields to satisfy types

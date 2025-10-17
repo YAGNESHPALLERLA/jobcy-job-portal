@@ -28,6 +28,7 @@ import {
   Save,
   // TrendingUp,
   UserCheck,
+  GraduationCap,
   // XCircle,
   // BarChart3,
   RefreshCw,
@@ -58,6 +59,8 @@ export default function JobManagement() {
   postedDate?: string;
   updatedAt?: string;
   skills?: string | string[];
+  careerLevel?: string;
+  experienceRange?: string;
 
 }
   const [jobs, setJobs] = useState<Job[]>([]);  const [searchTerm, setSearchTerm] = useState("");
@@ -66,22 +69,24 @@ export default function JobManagement() {
   const [errors, setErrors] = useState<{ [key: string]: string | undefined }>({});
   const [successMessage, setSuccessMessage] = useState("");
   type FormData = {
-  title: string;
-  department: string;
-  location: string;
-  type: string;
-  salaryMin: string;
-  salaryMax: string;
-  currency: string;
-  description: string;
-  responsibilities: string;
-  qualifications: string;
-  benefits: string;
-  experienceLevel: string;
-  skills: string;
-  applicationDeadline: string;
-  status: string;
-};
+   title: string;
+   department: string;
+   location: string;
+   type: string;
+   salaryMin: string;
+   salaryMax: string;
+   currency: string;
+   description: string;
+   responsibilities: string;
+   qualifications: string;
+   benefits: string;
+   experienceLevel: string;
+   skills: string;
+   applicationDeadline: string;
+   status: string;
+   careerLevel: string;
+   experienceRange: string;
+ };
   const [formData, setFormData] = useState<FormData>({
     title: "",
     department: "",
@@ -98,10 +103,16 @@ export default function JobManagement() {
     skills: "",
     applicationDeadline: "",
     status: "Active",
+    careerLevel: "",
+    experienceRange: "",
   });
 
   const getAuthHeaders = () => {
     const token = localStorage.getItem("token");
+    console.log("🔑 Getting auth headers - Token exists:", !!token);
+    if (!token) {
+      console.warn("⚠️ No token found in localStorage");
+    }
     return {
       Authorization: token ? `Bearer ${token}` : "",
       "Content-Type": "application/json",
@@ -110,18 +121,52 @@ export default function JobManagement() {
 
 const fetchJobs = useCallback(async (): Promise<void> => {
   setIsLoading(true);
+  setErrors({}); // Clear previous errors
+  
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/hr/jobs`, {
-      headers: getAuthHeaders(),
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+    const endpoint = `${apiUrl}/hr/jobs`;
+    
+    console.log("🔄 Fetching HR jobs from:", endpoint);
+    console.log("🌍 API_URL:", apiUrl);
+    
+    const headers = getAuthHeaders();
+    console.log("📋 Request headers:", headers);
+    
+    const res = await fetch(endpoint, {
+      headers: headers,
     });
-    if (!res.ok) throw new Error("Failed to fetch jobs");
+    
+    console.log("📡 Response status:", res.status);
+    console.log("📡 Response ok:", res.ok);
+    
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error("❌ Response error text:", errorText);
+      
+      let errorData;
+      try {
+        errorData = JSON.parse(errorText);
+      } catch {
+        errorData = { message: errorText };
+      }
+      
+      console.error("❌ Failed to fetch jobs:", errorData);
+      throw new Error(errorData.message || `Failed to fetch jobs (Status: ${res.status})`);
+    }
+    
     const data: Job[] = await res.json();
+    console.log("✅ Fetched jobs:", data.length, "jobs");
+    if (data.length > 0) {
+      console.log("📊 First job sample:", data[0]);
+    }
     setJobs(data);
   } catch (e) {
+    console.error("❌ Fetch jobs error:", e);
     if (e instanceof Error) {
-      setErrors({ general: e.message });
+      setErrors({ general: `Failed to fetch jobs: ${e.message}. Make sure backend is running on ${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}` });
     } else {
-      setErrors({ general: "An unexpected error occurred" });
+      setErrors({ general: "An unexpected error occurred while fetching jobs" });
     }
   } finally {
     setIsLoading(false);
@@ -129,7 +174,7 @@ const fetchJobs = useCallback(async (): Promise<void> => {
 }, []);
 
 
-  const createJob = async (jobPayload: { title: string; department: string; location: string; type: string; salaryMin: number; salaryMax: number; currency: string; description: string; responsibilities: string; qualifications: string; benefits: string; experienceLevel: string; skills: string; applicationDeadline: string; status: string; }) => {
+  const createJob = async (jobPayload: { title: string; company: string; location: string; type: string; salary: string; description: string; qualifications: string[]; careerLevel: string; experienceRange: string; status: string; applicationDeadline?: string; }) => {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/hr/jobs`, {
       method: "POST",
       headers: getAuthHeaders(),
@@ -142,7 +187,7 @@ const fetchJobs = useCallback(async (): Promise<void> => {
     return await res.json();
   };
 
-  const updateJob = async (id: string | undefined, jobPayload: { title: string; department: string; location: string; type: string; salaryMin: number; salaryMax: number; currency: string; description: string; responsibilities: string; qualifications: string; benefits: string; experienceLevel: string; skills: string; applicationDeadline: string; status: string; }) => {
+  const updateJob = async (id: string | undefined, jobPayload: { title: string; company: string; location: string; type: string; salary: string; description: string; qualifications: string[]; careerLevel: string; experienceRange: string; status: string; applicationDeadline?: string; }) => {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/hr/jobs/${id}`,
       {
@@ -193,10 +238,22 @@ const fetchJobs = useCallback(async (): Promise<void> => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    
+    // Auto-fill experience range when career level is selected
+    if (name === 'careerLevel') {
+      console.log("🎯 Career Level changed to:", value);
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+        experienceRange: value === 'Fresher' ? '0-1 years' : value === 'Experienced' ? '2+ years' : prev.experienceRange
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+    
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
@@ -210,6 +267,8 @@ const fetchJobs = useCallback(async (): Promise<void> => {
   salaryMin?: string;
   salaryMax?: string;
   skills?: string;
+  careerLevel?: string;
+  general?: string;
   [key: string]: string | undefined; // for dynamic keys if needed
   };
 
@@ -218,13 +277,15 @@ const fetchJobs = useCallback(async (): Promise<void> => {
     if (!(formData.title || "").trim())
       newErrors.title = "Job title is required";
     if (!(formData.department || "").trim())
-      newErrors.department = "Department is required";
+      newErrors.department = "Department/Company is required";
     if (!(formData.location || "").trim())
       newErrors.location = "Location is required";
     if (!(formData.description || "").trim())
       newErrors.description = "Job description is required";
     if (!(formData.qualifications || "").trim())
       newErrors.qualifications = "Qualifications are required";
+    if (!formData.careerLevel)
+      newErrors.careerLevel = "Career level is highly recommended for better job matching";
 
     if (formData.salaryMin && formData.salaryMax) {
       if (parseInt(formData.salaryMin) >= parseInt(formData.salaryMax)) {
@@ -253,6 +314,8 @@ const fetchJobs = useCallback(async (): Promise<void> => {
       skills: "",
       applicationDeadline: "",
       status: "Active",
+      careerLevel: "",
+      experienceRange: "",
     });
     setErrors({});
     setSelectedJob(null);
@@ -264,23 +327,40 @@ const fetchJobs = useCallback(async (): Promise<void> => {
     setSuccessMessage("");
     setErrors({});
 
+    // Format salary as a range string
+    const salaryMin = parseInt(formData.salaryMin) || 0;
+    const salaryMax = parseInt(formData.salaryMax) || 0;
+    const salaryString = salaryMin && salaryMax 
+      ? `${formData.currency} ${salaryMin.toLocaleString()} - ${salaryMax.toLocaleString()}`
+      : salaryMin 
+        ? `${formData.currency} ${salaryMin.toLocaleString()}+`
+        : "Negotiable";
+
+    // Convert qualifications from string to array
+    const qualificationsArray = formData.qualifications 
+      ? formData.qualifications.split('\n').filter(q => q.trim())
+      : [];
+
+    console.log("🔍 Form Data before submission:", formData);
+    console.log("🔍 Career Level:", formData.careerLevel);
+    console.log("🔍 Experience Range:", formData.experienceRange);
+
     const jobPayload = {
       title: formData.title,
-      department: formData.department,
+      company: formData.department, // Map department to company
       location: formData.location,
       type: formData.type,
-      salaryMin: parseInt(formData.salaryMin) || 0,
-      salaryMax: parseInt(formData.salaryMax) || 0,
-      currency: formData.currency,
+      salary: salaryString, // Send formatted salary string
       description: formData.description,
-      responsibilities: formData.responsibilities,
-      qualifications: formData.qualifications,
-      benefits: formData.benefits,
-      experienceLevel: formData.experienceLevel,
-      skills: formData.skills,
-      applicationDeadline: formData.applicationDeadline,
+      qualifications: qualificationsArray, // Send as array
+      careerLevel: formData.careerLevel, // This is what backend expects
+      experienceRange: formData.experienceRange,
       status: formData.status,
+      applicationDeadline: formData.applicationDeadline || undefined,
     };
+
+    console.log("📤 Submitting job payload:", jobPayload);
+    console.log("📤 Payload careerLevel:", jobPayload.careerLevel);
 
     try {
       if (currentView === "create") {
@@ -336,6 +416,8 @@ const fetchJobs = useCallback(async (): Promise<void> => {
       : job.skills || "",
     applicationDeadline: job.applicationDeadline || "",
     status: job.status || "Active",
+    careerLevel: job.careerLevel || "",
+    experienceRange: job.experienceRange || "",
   });
   setCurrentView("edit");
 };
@@ -442,7 +524,7 @@ const fetchJobs = useCallback(async (): Promise<void> => {
 
 
   const renderForm = () => (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-cyan-50">
       <div className="max-w-4xl mx-auto p-6">
         {/* Header */}
         <div className="mb-8">
@@ -457,7 +539,7 @@ const fetchJobs = useCallback(async (): Promise<void> => {
           </button>
 
           <div className="flex items-center space-x-4 mb-6">
-            <div className="w-14 h-14 bg-gradient-to-br from-primary-600 via-purple-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-xl">
+            <div className="w-14 h-14 bg-gradient-to-br from-green-600 via-teal-600 to-cyan-600 rounded-2xl flex items-center justify-center shadow-xl">
               {currentView === "create" ? (
                 <Plus className="w-7 h-7 text-white" />
               ) : (
@@ -520,10 +602,10 @@ const fetchJobs = useCallback(async (): Promise<void> => {
                       name="title"
                       value={formData.title}
                       onChange={handleInputChange}
-                      className={`w-full px-5 py-4 border-2 rounded-xl bg-slate-50 focus:bg-white focus:outline-none transition-all duration-200 font-medium ${
+                      className={`w-full px-5 py-4 border-2 rounded-xl bg-gray-800 text-white focus:bg-gray-800 focus:outline-none transition-all duration-200 font-medium ${
                         errors.title
                           ? "border-red-300 focus:border-red-500 focus:ring-4 focus:ring-red-100"
-                          : "border-slate-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-100"
+                          : "border-slate-200 focus:border-green-500 focus:ring-4 focus:ring-green-100"
                       }`}
                       placeholder="e.g., Senior Software Engineer"
                     />
@@ -544,10 +626,10 @@ const fetchJobs = useCallback(async (): Promise<void> => {
                       name="department"
                       value={formData.department}
                       onChange={handleInputChange}
-                      className={`w-full px-5 py-4 border-2 rounded-xl bg-slate-50 focus:bg-white focus:outline-none transition-all duration-200 font-medium ${
+                      className={`w-full px-5 py-4 border-2 rounded-xl bg-gray-800 text-white focus:bg-gray-800 focus:outline-none transition-all duration-200 font-medium ${
                         errors.department
                           ? "border-red-300 focus:border-red-500 focus:ring-4 focus:ring-red-100"
-                          : "border-slate-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-100"
+                          : "border-slate-200 focus:border-green-500 focus:ring-4 focus:ring-green-100"
                       }`}
                       placeholder="e.g., Engineering"
                     />
@@ -568,10 +650,10 @@ const fetchJobs = useCallback(async (): Promise<void> => {
                       name="location"
                       value={formData.location}
                       onChange={handleInputChange}
-                      className={`w-full px-5 py-4 border-2 rounded-xl bg-slate-50 focus:bg-white focus:outline-none transition-all duration-200 font-medium ${
+                      className={`w-full px-5 py-4 border-2 rounded-xl bg-gray-800 text-white focus:bg-gray-800 focus:outline-none transition-all duration-200 font-medium ${
                         errors.location
                           ? "border-red-300 focus:border-red-500 focus:ring-4 focus:ring-red-100"
-                          : "border-slate-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-100"
+                          : "border-slate-200 focus:border-green-500 focus:ring-4 focus:ring-green-100"
                       }`}
                       placeholder="e.g., San Francisco, CA or Remote"
                     />
@@ -585,19 +667,20 @@ const fetchJobs = useCallback(async (): Promise<void> => {
 
                   <div>
                     <label className="block text-sm font-bold text-slate-700 mb-3">
-                      Job Type
+                      Job Type *
                     </label>
                     <div className="relative">
                       <select
                         name="type"
                         value={formData.type}
                         onChange={handleInputChange}
-                        className="w-full px-5 py-4 border-2 border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all duration-200 appearance-none font-medium"
+                        className="w-full px-5 py-4 border-2 border-slate-200 rounded-xl bg-white text-slate-900 focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all duration-200 font-medium appearance-none"
                       >
                         <option value="Full-time">Full-time</option>
                         <option value="Part-time">Part-time</option>
                         <option value="Contract">Contract</option>
                         <option value="Internship">Internship</option>
+                        <option value="Remote">Remote</option>
                       </select>
                       <ChevronDown className="w-5 h-5 text-slate-400 absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none" />
                     </div>
@@ -612,7 +695,7 @@ const fetchJobs = useCallback(async (): Promise<void> => {
                         name="status"
                         value={formData.status}
                         onChange={handleInputChange}
-                        className="w-full px-5 py-4 border-2 border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all duration-200 appearance-none font-medium"
+                        className="w-full px-5 py-4 border-2 border-slate-200 rounded-xl bg-white text-slate-900 focus:outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-200 appearance-none font-medium"
                       >
                         <option value="Active">Active</option>
                         <option value="Paused">Paused</option>
@@ -620,6 +703,53 @@ const fetchJobs = useCallback(async (): Promise<void> => {
                       </select>
                       <ChevronDown className="w-5 h-5 text-slate-400 absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none" />
                     </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-3">
+                      Career Level <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <select
+                        name="careerLevel"
+                        value={formData.careerLevel}
+                        onChange={handleInputChange}
+                        required
+                        className={`w-full px-5 py-4 border-2 rounded-xl bg-white text-slate-900 focus:outline-none transition-all duration-200 font-medium appearance-none ${
+                          errors.careerLevel 
+                            ? 'border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-100' 
+                            : 'border-slate-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-100'
+                        }`}
+                      >
+                        <option value="">Select Career Level</option>
+                        <option value="Fresher">Fresher (0-1 years)</option>
+                        <option value="Experienced">Experienced (2+ years)</option>
+                      </select>
+                      {errors.careerLevel && (
+                        <p className="text-red-600 text-sm mt-2 flex items-center gap-2 font-medium">
+                          <AlertCircle className="w-4 h-4" />
+                          {errors.careerLevel}
+                        </p>
+                      )}
+                      <ChevronDown className="w-5 h-5 text-slate-400 absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-3">
+                      Experience Range
+                    </label>
+                    <input
+                      type="text"
+                      name="experienceRange"
+                      value={formData.experienceRange}
+                      onChange={handleInputChange}
+                      className="w-full px-5 py-4 border-2 border-slate-200 rounded-xl bg-white text-slate-900 focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all duration-200 font-medium"
+                      placeholder="e.g., 0-1 years, 3-5 years, 5+ years"
+                    />
+                    <p className="text-xs text-slate-500 mt-2">
+                      Auto-filled based on Career Level (can be customized)
+                    </p>
                   </div>
                 </div>
               </div>
@@ -643,7 +773,7 @@ const fetchJobs = useCallback(async (): Promise<void> => {
                         name="currency"
                         value={formData.currency}
                         onChange={handleInputChange}
-                        className="w-full px-5 py-4 border-2 border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all duration-200 appearance-none font-medium"
+                        className="w-full px-5 py-4 border-2 border-slate-200 rounded-xl bg-gray-800 text-white focus:bg-gray-800 focus:outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-200 appearance-none font-medium"
                       >
                         <option value="USD">USD ($)</option>
                         <option value="EUR">EUR (€)</option>
@@ -663,7 +793,7 @@ const fetchJobs = useCallback(async (): Promise<void> => {
                       name="salaryMin"
                       value={formData.salaryMin}
                       onChange={handleInputChange}
-                      className="w-full px-5 py-4 border-2 border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all duration-200 font-medium"
+                      className="w-full px-5 py-4 border-2 border-slate-200 rounded-xl bg-gray-800 text-white focus:bg-gray-800 focus:outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-200 font-medium"
                       placeholder="80000"
                     />
                   </div>
@@ -677,7 +807,7 @@ const fetchJobs = useCallback(async (): Promise<void> => {
                       name="salaryMax"
                       value={formData.salaryMax}
                       onChange={handleInputChange}
-                      className={`w-full px-5 py-4 border-2 rounded-xl bg-slate-50 focus:bg-white focus:outline-none transition-all duration-200 font-medium ${
+                      className={`w-full px-5 py-4 border-2 rounded-xl bg-gray-800 text-white focus:bg-gray-800 focus:outline-none transition-all duration-200 font-medium ${
                         errors.salaryMax
                           ? "border-red-300 focus:border-red-500 focus:ring-4 focus:ring-red-100"
                           : "border-slate-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-100"
@@ -713,7 +843,7 @@ const fetchJobs = useCallback(async (): Promise<void> => {
                       value={formData.description}
                       onChange={handleInputChange}
                       rows={5}
-                      className={`w-full px-5 py-4 border-2 rounded-xl bg-slate-50 focus:bg-white focus:outline-none transition-all duration-200 font-medium ${
+                      className={`w-full px-5 py-4 border-2 rounded-xl bg-gray-800 text-white focus:bg-gray-800 focus:outline-none transition-all duration-200 font-medium ${
                         errors.description
                           ? "border-red-300 focus:border-red-500 focus:ring-4 focus:ring-red-100"
                           : "border-slate-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-100"
@@ -738,7 +868,7 @@ const fetchJobs = useCallback(async (): Promise<void> => {
                         value={formData.responsibilities}
                         onChange={handleInputChange}
                         rows={4}
-                        className="w-full px-5 py-4 border-2 border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all duration-200 font-medium"
+                        className="w-full px-5 py-4 border-2 border-slate-200 rounded-xl bg-gray-800 text-white focus:bg-gray-800 focus:outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-200 font-medium"
                         placeholder="List the main responsibilities..."
                       />
                     </div>
@@ -752,7 +882,7 @@ const fetchJobs = useCallback(async (): Promise<void> => {
                         value={formData.qualifications}
                         onChange={handleInputChange}
                         rows={4}
-                        className={`w-full px-5 py-4 border-2 rounded-xl bg-slate-50 focus:bg-white focus:outline-none transition-all duration-200 font-medium ${
+                        className={`w-full px-5 py-4 border-2 rounded-xl bg-gray-800 text-white focus:bg-gray-800 focus:outline-none transition-all duration-200 font-medium ${
                           errors.qualifications
                             ? "border-red-300 focus:border-red-500 focus:ring-4 focus:ring-red-100"
                             : "border-slate-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-100"
@@ -778,22 +908,8 @@ const fetchJobs = useCallback(async (): Promise<void> => {
                         value={formData.benefits}
                         onChange={handleInputChange}
                         rows={3}
-                        className="w-full px-5 py-4 border-2 border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all duration-200 font-medium"
+                        className="w-full px-5 py-4 border-2 border-slate-200 rounded-xl bg-gray-800 text-white focus:bg-gray-800 focus:outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-200 font-medium"
                         placeholder="Health insurance, retirement plans..."
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-bold text-slate-700 mb-3">
-                        Experience Level
-                      </label>
-                      <input
-                        type="text"
-                        name="experienceLevel"
-                        value={formData.experienceLevel}
-                        onChange={handleInputChange}
-                        className="w-full px-5 py-4 border-2 border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all duration-200 font-medium"
-                        placeholder="e.g., 3-5 years, Entry Level"
                       />
                     </div>
                   </div>
@@ -807,7 +923,7 @@ const fetchJobs = useCallback(async (): Promise<void> => {
                       name="applicationDeadline"
                       value={formData.applicationDeadline}
                       onChange={handleInputChange}
-                      className="w-full px-5 py-4 border-2 border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all duration-200 font-medium"
+                      className="w-full px-5 py-4 border-2 rounded-xl bg-gray-800 text-white focus:bg-gray-800 focus:outline-none transition-all duration-200 font-medium"
                     />
                   </div>
                 </div>
@@ -829,7 +945,7 @@ const fetchJobs = useCallback(async (): Promise<void> => {
                 type="button"
                 onClick={handleSubmit}
                 disabled={isLoading}
-                className="flex items-center space-x-2 px-8 py-3.5 bg-gradient-to-r from-primary-600 via-purple-600 to-pink-600 hover:from-primary-700 hover:via-purple-700 hover:to-pink-700 disabled:from-slate-400 disabled:to-slate-500 text-white font-bold rounded-xl transition-all duration-200 disabled:cursor-not-allowed shadow-xl hover:shadow-2xl transform hover:-translate-y-0.5 active:translate-y-0"
+                className="flex items-center space-x-2 px-8 py-3.5 bg-gradient-to-r from-green-600 via-teal-600 to-cyan-600 hover:from-green-700 hover:via-teal-700 hover:to-cyan-700 disabled:from-slate-400 disabled:to-slate-500 text-white font-bold rounded-xl transition-all duration-200 disabled:cursor-not-allowed shadow-xl hover:shadow-2xl transform hover:-translate-y-0.5 active:translate-y-0"
               >
                 {isLoading ? (
                   <>
@@ -855,13 +971,13 @@ const fetchJobs = useCallback(async (): Promise<void> => {
   );
 
   const renderListView = () => (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-cyan-50">
       <div className="max-w-7xl mx-auto p-6">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center space-x-4">
-              <div className="w-14 h-14 bg-gradient-to-br from-primary-600 via-purple-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-xl">
+              <div className="w-14 h-14 bg-gradient-to-br from-green-600 via-teal-600 to-cyan-600 rounded-2xl flex items-center justify-center shadow-xl">
                 <Briefcase className="w-7 h-7 text-white" />
               </div>
               <div>
@@ -879,7 +995,7 @@ const fetchJobs = useCallback(async (): Promise<void> => {
                 resetForm();
                 setCurrentView("create");
               }}
-              className="flex items-center space-x-2 bg-gradient-to-r from-primary-600 via-purple-600 to-pink-600 hover:from-primary-700 hover:via-purple-700 hover:to-pink-700 text-white font-bold px-6 py-3.5 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-0.5 group"
+              className="flex items-center space-x-2 bg-gradient-to-r from-green-600 via-teal-600 to-cyan-600 hover:from-green-700 hover:via-teal-700 hover:to-cyan-700 text-white font-bold px-6 py-3.5 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-0.5 group"
             >
               <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
               <span>Create New Job</span>
@@ -970,7 +1086,7 @@ const fetchJobs = useCallback(async (): Promise<void> => {
                 placeholder="Search job postings by title, department, or location..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 border-2 border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all duration-200 font-medium"
+                className="w-full pl-12 pr-4 py-4 border-2 border-slate-200 rounded-xl bg-gray-800 text-white focus:bg-gray-800 focus:outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-200 font-medium"
               />
             </div>
 
@@ -979,7 +1095,7 @@ const fetchJobs = useCallback(async (): Promise<void> => {
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="appearance-none bg-slate-50 border-2 border-slate-200 rounded-xl px-5 py-4 pr-12 text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-primary-100 focus:border-primary-500 transition-all"
+                  className="appearance-none bg-gray-800 text-white border-2 border-slate-200 rounded-xl px-5 py-4 pr-12 text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-green-100 focus:border-green-500 transition-all"
                 >
                   <option value="all">All Status</option>
                   <option value="active">Active</option>
@@ -989,7 +1105,7 @@ const fetchJobs = useCallback(async (): Promise<void> => {
                 <ChevronDown className="w-5 h-5 text-slate-400 absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none" />
               </div>
 
-              <div className="flex items-center space-x-2 px-4 py-4 bg-gradient-to-r from-primary-50 to-purple-50 rounded-xl border-2 border-primary-200">
+              <div className="w-full px-5 py-4 border-2 rounded-xl bg-gray-800 text-white focus:bg-gray-800 focus:outline-none transition-all duration-200 font-medium">
                 <Filter className="w-5 h-5 text-primary-600" />
                 <span className="text-sm font-bold text-primary-900">
                   {filteredJobs.length} of {jobs.length}
@@ -1046,7 +1162,7 @@ const fetchJobs = useCallback(async (): Promise<void> => {
                     <div className="flex-1">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
-                          <div className="flex items-center space-x-3 mb-3">
+                          <div className="flex items-center flex-wrap gap-3 mb-3">
                             <h3 className="text-2xl font-bold text-slate-900 group-hover:text-primary-600 transition-colors">
                               {job.title}
                             </h3>
@@ -1062,6 +1178,25 @@ const fetchJobs = useCallback(async (): Promise<void> => {
                               <div className="w-2 h-2 rounded-full mr-2 bg-white animate-pulse"></div>
                               {job.status}
                             </span>
+                            {job.careerLevel && (
+                              <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold shadow-lg ${
+                                job.careerLevel === 'Fresher'
+                                  ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white"
+                                  : "bg-gradient-to-r from-purple-500 to-purple-600 text-white"
+                              }`}>
+                                {job.careerLevel === 'Fresher' ? (
+                                  <>
+                                    <GraduationCap className="w-3 h-3" />
+                                    Fresher
+                                  </>
+                                ) : (
+                                  <>
+                                    <Briefcase className="w-3 h-3" />
+                                    Experienced
+                                  </>
+                                )}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -1202,7 +1337,7 @@ const fetchJobs = useCallback(async (): Promise<void> => {
                     onClick={() => {
                       window.location.href = `/hr/application-management?job=${encodeURIComponent(job.title)}`;
                     }}
-                    className="flex items-center space-x-2 px-5 py-2.5 bg-gradient-to-r from-primary-600 to-purple-600 hover:from-primary-700 hover:to-purple-700 text-white text-sm font-bold rounded-xl transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+                    className="flex items-center space-x-2 px-5 py-2.5 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white text-sm font-bold rounded-xl transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
                   >
                     <FileText className="w-4 h-4" />
                     <span>View Applications</span>
@@ -1229,7 +1364,7 @@ const fetchJobs = useCallback(async (): Promise<void> => {
                     resetForm();
                     setCurrentView("create");
                   }}
-                  className="inline-flex items-center space-x-2 bg-gradient-to-r from-primary-600 via-purple-600 to-pink-600 hover:from-primary-700 hover:via-purple-700 hover:to-pink-700 text-white font-bold px-6 py-3 rounded-xl transition-all shadow-xl hover:shadow-2xl hover:-translate-y-0.5"
+                  className="inline-flex items-center space-x-2 bg-gradient-to-r from-green-600 via-teal-600 to-cyan-600 hover:from-green-700 hover:via-teal-700 hover:to-cyan-700 text-white font-bold px-6 py-3 rounded-xl transition-all shadow-xl hover:shadow-2xl hover:-translate-y-0.5"
                 >
                   <Plus className="w-5 h-5" />
                   <span>Create New Job</span>

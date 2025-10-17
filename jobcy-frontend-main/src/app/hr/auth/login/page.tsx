@@ -102,10 +102,10 @@ export default function HRLogin() {
             <Users className="w-7 h-7 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-            HR Login
+            Welcome Back
           </h1>
           <p className="text-slate-600 dark:text-slate-400">
-            Sign in to manage HR operations
+            Sign in to continue to your dashboard
           </p>
         </div>
 

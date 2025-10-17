@@ -47,6 +47,7 @@ interface HRFormData {
   email: string;
   password: string;
   company: string;
+  companyId?: string;           // Add companyId to link HR to company
   companyLocation?: string;      
   companyDescription?: string;   
   companySize: string;
@@ -54,6 +55,13 @@ interface HRFormData {
   website: string;
   phone: string;
   address: string;
+}
+
+// Company interface for dropdown
+interface CompanyOption {
+  _id: string;
+  name: string;
+  email: string;
 }
 
 
@@ -78,12 +86,14 @@ export default function HRManagement() {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<HRErrors>({});
   const [successMessage, setSuccessMessage] = useState("");
+  const [companies, setCompanies] = useState<CompanyOption[]>([]);
 
   const [formData, setFormData] = useState<HRFormData>({
     name: "",
     email: "",
     password: "",
     company: "",
+    companyId: "",
     companySize: "",
     industry: "",
     website: "",
@@ -113,7 +123,27 @@ export default function HRManagement() {
       }
     };
 
+    const fetchCompanies = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/admin/companies", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setCompanies(Array.isArray(data) ? data : []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch companies", err);
+        setCompanies([]);
+      }
+    };
+
     fetchHRs();
+    fetchCompanies();
   }, []);
 
 const handleInputChange = (
@@ -174,6 +204,7 @@ const handleInputChange = (
         description: formData.companyDescription || "", // Add if available
         website: formData.website || "",
       },
+      companyId: formData.companyId || undefined, // Include companyId to link HR to Company
     };
 
     try {
@@ -630,6 +661,35 @@ const handleInputChange = (
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Company Information
             </h3>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Select Registered Company (Optional)
+              </label>
+              <select
+                name="companyId"
+                value={formData.companyId || ""}
+                onChange={(e) => {
+                  const selectedCompany = companies.find(c => c._id === e.target.value);
+                  setFormData(prev => ({
+                    ...prev,
+                    companyId: e.target.value,
+                    company: selectedCompany ? selectedCompany.name : prev.company,
+                  }));
+                }}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors text-gray-900"
+              >
+                <option value="">-- Select a company (or enter manually below) --</option>
+                {companies.map((company) => (
+                  <option key={company._id} value={company._id}>
+                    {company.name} ({company.email})
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-gray-500">
+                Select an existing company from the dropdown, or enter company details manually below
+              </p>
+            </div>
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">

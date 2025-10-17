@@ -78,6 +78,7 @@ exports.getMyJobs = async (req, res) => {
 
     const formattedJobs = jobs.map((job) => ({
       id: job._id,
+      _id: job._id,
       title: job.title,
       company: job.company,
       location: job.location,
@@ -88,7 +89,13 @@ exports.getMyJobs = async (req, res) => {
       applicants: job.applicants || 0,
       postedDate: job.postedDate,
       qualifications: job.qualifications || [],
+      careerLevel: job.careerLevel,
+      experienceRange: job.experienceRange,
+      applicationDeadline: job.applicationDeadline,
+      department: job.company, // Map company to department for frontend
     }));
+
+    console.log("📤 Sending jobs to HR frontend:", formattedJobs.length > 0 ? formattedJobs[0] : "No jobs");
 
     res.json(formattedJobs);
   } catch (error) {
@@ -100,6 +107,8 @@ exports.getMyJobs = async (req, res) => {
 // Create a new job
 exports.createJob = async (req, res) => {
   try {
+    console.log("🆕 HR Creating job - Request body:", req.body);
+    
     const {
       title,
       description,
@@ -108,12 +117,21 @@ exports.createJob = async (req, res) => {
       salary,
       qualifications,
       type,
+      careerLevel,
+      experienceRange,
+      status,
+      applicationDeadline,
     } = req.body;
 
-    console.log("🆕 Creating job:", title);
+    console.log("🆕 Creating job:", title, "- Career Level:", careerLevel);
 
     if (req.user.role !== "hr") {
       return res.status(403).json({ message: "Only HR users can post jobs" });
+    }
+
+    // Warn if careerLevel is not provided
+    if (!careerLevel) {
+      console.warn("⚠️ Warning: Career level not provided, using default 'Experienced'");
     }
 
     const job = new Job({
@@ -125,18 +143,28 @@ exports.createJob = async (req, res) => {
       salary,
       qualifications: qualifications || [],
       type,
-      status: "Active",
+      careerLevel: careerLevel || "Experienced", // Use default if not provided
+      experienceRange,
+      status: status || "Active",
       postedDate: new Date(),
+      applicationDeadline: applicationDeadline ? new Date(applicationDeadline) : undefined,
     });
+
+    try {
+      console.log("📝 Job object to save:", JSON.stringify(job));
+    } catch (e) {
+      console.log("📝 Job object to save - couldn't stringify");
+    }
 
     await job.save();
 
-    console.log("✅ Job created successfully:", job._id);
+    console.log("✅ Job created successfully:", job._id, "- Saved careerLevel:", job.careerLevel);
 
     res.status(201).json({
       message: "Job posted successfully",
       job: {
         id: job._id,
+        _id: job._id,
         title: job.title,
         company: job.company,
         location: job.location,
@@ -144,12 +172,33 @@ exports.createJob = async (req, res) => {
         type: job.type,
         description: job.description,
         status: job.status,
+        careerLevel: job.careerLevel,
+        experienceRange: job.experienceRange,
+        qualifications: job.qualifications,
         postedDate: job.postedDate,
+        applicationDeadline: job.applicationDeadline,
+        department: job.company,
       },
     });
   } catch (error) {
     console.error("❌ Error posting job:", error);
-    res.status(500).json({ message: "Server error" });
+    console.error("Error details:", error.message);
+    
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      const validationErrors = Object.values(error.errors).map((err) => err.message);
+      return res.status(400).json({ 
+        message: "Validation failed", 
+        errors: validationErrors,
+        details: error.message
+      });
+    }
+    
+    res.status(500).json({ 
+      message: "Server error",
+      error: error.message,
+      details: "Check backend console for more information"
+    });
   }
 };
 
@@ -159,7 +208,7 @@ exports.updateJob = async (req, res) => {
     const jobId = req.params.id;
     const updates = req.body;
 
-    console.log("✏️ Updating job:", jobId);
+    console.log("✏️ Updating job:", jobId, "- Updates:", updates);
 
     if (req.user.role !== "hr") {
       return res.status(403).json({ message: "Access denied" });
@@ -168,15 +217,49 @@ exports.updateJob = async (req, res) => {
     const job = await Job.findOne({ _id: jobId, postedBy: req.user._id });
     if (!job) return res.status(404).json({ message: "Job not found" });
 
+    // Update fields
     Object.assign(job, updates);
+    
+    try {
+      console.log("📝 Job before save:", JSON.stringify(job));
+    } catch (e) {
+      console.log("📝 Job before save - couldn't stringify");
+    }
+    
     await job.save();
 
-    console.log("✅ Job updated successfully:", jobId);
+    console.log("✅ Job updated successfully:", jobId, "- careerLevel:", job.careerLevel);
 
-    res.json({ message: "Job updated", job });
+    // Return complete job data
+    const updatedJob = {
+      id: job._id,
+      _id: job._id,
+      title: job.title,
+      company: job.company,
+      location: job.location,
+      salary: job.salary,
+      type: job.type,
+      description: job.description,
+      status: job.status,
+      applicants: job.applicants || 0,
+      postedDate: job.postedDate,
+      qualifications: job.qualifications || [],
+      careerLevel: job.careerLevel,
+      experienceRange: job.experienceRange,
+      applicationDeadline: job.applicationDeadline,
+      department: job.company,
+    };
+
+    res.json({ message: "Job updated", job: updatedJob });
   } catch (error) {
     console.error("❌ Error updating job:", error);
-    res.status(500).json({ message: "Server error" });
+    console.error("Error details:", error.message);
+    console.error("Error stack:", error.stack);
+    res.status(500).json({ 
+      message: "Server error", 
+      error: error.message,
+      details: "Check backend console for more information"
+    });
   }
 };
 

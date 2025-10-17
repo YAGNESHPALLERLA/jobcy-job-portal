@@ -32,9 +32,19 @@ const jobSchema = new mongoose.Schema({
     required: true,
   },
   qualifications: [String],
+  careerLevel: {
+    type: String,
+    enum: ["Fresher", "Experienced"],
+    required: false,
+    default: "Experienced", // Default for existing jobs
+  },
+  experienceRange: {
+    type: String,
+    required: false,
+  },
   status: {
     type: String,
-    enum: ["Active", "Closed", "Draft"],
+    enum: ["Active", "Closed", "Draft", "Paused"],
     default: "Active",
   },
   applicants: {
@@ -44,6 +54,10 @@ const jobSchema = new mongoose.Schema({
   postedDate: {
     type: Date,
     default: Date.now,
+  },
+  applicationDeadline: {
+    type: Date,
+    required: false,
   },
 });
 

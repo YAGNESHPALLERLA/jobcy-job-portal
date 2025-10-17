@@ -53,7 +53,7 @@ exports.registerUser = async (req, res) => {
 exports.registerHR = async (req, res) => {
   try {
     console.log("Register HR request body:", req.body);
-    const { name, email, password, company, phone } = req.body;
+    const { name, email, password, company, phone, companyId } = req.body;
 
     if (!name || !name.trim()) {
       return res.status(400).json({ error: "Name is required." });
@@ -91,6 +91,7 @@ exports.registerHR = async (req, res) => {
         ...company,
         name: trimmedCompanyName,
       },
+      companyId: companyId || undefined, // Link to Company model if provided
       createdByAdmin: req.user.id,
     });
 

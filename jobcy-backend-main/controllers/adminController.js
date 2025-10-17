@@ -40,6 +40,7 @@ exports.getAllHRs = async (req, res) => {
       name: hr.name,
       email: hr.email,
       company: hr.company,
+      companyId: hr.companyId, // Include companyId for filtering
       companySize: hr.company?.companySize || "",
       industry: hr.company?.industry || "",
       website: hr.company?.website || "",

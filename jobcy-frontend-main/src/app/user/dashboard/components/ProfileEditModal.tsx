@@ -10,6 +10,7 @@ interface ProfileEditModalProps {
   isDark?: boolean;
   onClose: () => void;
   onSave: (profile: UserProfile) => Promise<{ success: boolean; message?: string }>;
+  initialSection?: string;
 }
 
 interface EducationFormProps {
@@ -556,9 +557,10 @@ export default function ProfileEditModal({
   isDark = false,
   onClose,
   onSave,
+  initialSection = "personal",
 }: ProfileEditModalProps) {
   const [editingProfile, setEditingProfile] = useState<UserProfile>({ ...userProfile });
-  const [activeSection, setActiveSection] = useState<string>("personal");
+  const [activeSection, setActiveSection] = useState<string>(initialSection);
   const [education, setEducation] = useState<Education[]>([]);
   const [editingEducation, setEditingEducation] = useState<Education | null>(null);
   const [showEducationForm, setShowEducationForm] = useState(false);
@@ -881,9 +883,9 @@ export default function ProfileEditModal({
                           No education entries yet. Add your first education below.
                         </p>
                       ) : (
-                        education.map((edu) => (
+                        education.map((edu, index) => (
                           <div
-                            key={edu.id}
+                            key={edu.id || `edu-${index}`}
                             className={`p-4 rounded-lg border ${
                               isDark ? "bg-slate-700 border-slate-600" : "bg-white border-slate-300"
                             }`}
@@ -999,9 +1001,9 @@ export default function ProfileEditModal({
                           No experience entries yet. Add your first experience below.
                         </p>
                       ) : (
-                        modalExperience.map((exp) => (
+                        modalExperience.map((exp, index) => (
                           <div
-                            key={exp.id}
+                            key={exp.id || `exp-${index}`}
                             className={`p-4 rounded-lg border ${
                               isDark ? "bg-slate-700 border-slate-600" : "bg-white border-slate-300"
                             }`}
@@ -1111,7 +1113,7 @@ export default function ProfileEditModal({
                   ) : (
                     projects.map((project, index) => (
                       <div
-                        key={index}
+                        key={`project-${index}-${project.title}`}
                         className={`p-4 rounded-lg border ${
                           isDark ? "bg-slate-700 border-slate-600" : "bg-white border-slate-300"
                         }`}
@@ -1331,7 +1333,7 @@ export default function ProfileEditModal({
                   ) : (
                     skills.map((skill, index) => (
                       <div
-                        key={index}
+                        key={`skill-${index}-${skill}`}
                         className={`p-4 rounded-lg border ${
                           isDark ? "bg-slate-700 border-slate-600" : "bg-white border-slate-300"
                         }`}
@@ -1477,7 +1479,7 @@ export default function ProfileEditModal({
                   ) : (
                     languages.map((language, index) => (
                       <div
-                        key={index}
+                        key={`language-${index}-${language.name}`}
                         className={`p-4 rounded-lg border ${
                           isDark ? "bg-slate-700 border-slate-600" : "bg-white border-slate-300"
                         }`}

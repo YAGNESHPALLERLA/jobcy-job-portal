@@ -193,7 +193,7 @@ type RenderableField = string | number | null | undefined | NameOrTitle;
     subtitle,
     trend,
   }) => (
-    <div className="group relative bg-white rounded-3xl p-6 shadow-sm border border-slate-200/50 hover:shadow-2xl hover:border-transparent transition-all duration-500 overflow-hidden">
+    <div className="group relative bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl p-6 shadow-sm border border-slate-200/50 hover:shadow-2xl hover:border-transparent transition-all duration-500 overflow-hidden">
       {/* Animated gradient background */}
       <div
         className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-500`}
@@ -251,7 +251,7 @@ type RenderableField = string | number | null | undefined | NameOrTitle;
   
 
   const JobCard = ({ job }: { job: Job }) => (
-    <div className="group relative bg-gradient-to-br from-white to-slate-50/50 rounded-2xl border border-slate-200 hover:border-primary-300 hover:shadow-xl transition-all duration-300 overflow-hidden">
+    <div className="group relative bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-slate-200 hover:border-primary-300 hover:shadow-xl transition-all duration-300 overflow-hidden">
       {/* Gradient accent */}
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary-500 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
@@ -411,9 +411,9 @@ type RenderableField = string | number | null | undefined | NameOrTitle;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-cyan-50">
       {/* Enhanced Header */}
-      <header className="bg-white/90 backdrop-blur-xl shadow-lg border-b border-slate-200/60 sticky top-0 z-50">
+      <header className="bg-gradient-to-r from-blue-100/90 via-indigo-100/90 to-cyan-100/90 backdrop-blur-xl shadow-lg border-b border-slate-200/60 sticky top-0 z-50">
         <div className="px-8 py-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-5">
@@ -488,12 +488,12 @@ type RenderableField = string | number | null | undefined | NameOrTitle;
             </p>
           </div>
           <div className="flex items-center space-x-3">
-            <button className="flex items-center space-x-2 px-5 py-3 bg-white border-2 border-slate-200 hover:border-primary-300 text-slate-700 rounded-xl font-semibold shadow-sm hover:shadow-lg transition-all hover:-translate-y-0.5">
+            <button className="flex items-center space-x-2 px-5 py-3 bg-gradient-to-r from-blue-100 to-indigo-100 border-2 border-slate-200 hover:border-primary-300 text-slate-700 rounded-xl font-semibold shadow-sm hover:shadow-lg transition-all hover:-translate-y-0.5">
               <Download className="w-5 h-5" />
               <span>Export</span>
             </button>
             <Link href="/hr/jobs-management">
-              <button className="flex items-center space-x-2 bg-gradient-to-r from-primary-600 to-purple-600 hover:from-primary-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-0.5 group">
+              <button className="flex items-center space-x-2 bg-gradient-to-r from-blue-200 to-indigo-200 hover:from-blue-300 hover:to-indigo-300 text-slate-800 px-6 py-3 rounded-xl font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-0.5 group">
                 <Target className="w-5 h-5 group-hover:rotate-12 transition-transform" />
                 <span>Manage Jobs</span>
                 <ArrowUpRight className="w-4 h-4" />
@@ -557,9 +557,9 @@ type RenderableField = string | number | null | undefined | NameOrTitle;
 
               <div className="flex items-center space-x-3">
                 <div className="relative">
-                  <Filter className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 transform -translate-y-1/2" />
+                  <Filter className="w-4 h-4 text-white absolute left-4 top-1/2 transform -translate-y-1/2" />
                   <select
-                    className="appearance-none bg-white border-2 border-slate-200 hover:border-primary-300 rounded-xl pl-11 pr-10 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                    className="appearance-none bg-black text-white border-2 border-slate-200 hover:border-primary-300 rounded-xl pl-11 pr-10 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     value={filterStatus}
                     onChange={(e) => setFilterStatus(e.target.value)}
                   >
@@ -572,13 +572,13 @@ type RenderableField = string | number | null | undefined | NameOrTitle;
                 </div>
 
                 <div className="relative">
-                  <Search className="w-5 h-5 text-slate-400 absolute left-4 top-1/2 transform -translate-y-1/2" />
+                  <Search className="w-5 h-5 text-white absolute left-4 top-1/2 transform -translate-y-1/2" />
                   <input
                     type="text"
                     placeholder="Search jobs..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-12 pr-4 py-3 bg-white border-2 border-slate-200 hover:border-primary-300 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all w-72"
+                    className="pl-12 pr-4 py-3 bg-black text-white border-2 border-slate-200 hover:border-primary-300 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all w-72"
                   />
                 </div>
               </div>

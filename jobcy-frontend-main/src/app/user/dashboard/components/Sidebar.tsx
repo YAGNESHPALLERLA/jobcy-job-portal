@@ -8,7 +8,6 @@ import {
   Calendar,
   TrendingUp,
   Award,
-  Bell,
   ChevronRight,
   ChevronLeft,
   CheckSquare,
@@ -51,7 +50,7 @@ export default function Sidebar({
     { id: "jobs", label: "Find Jobs", icon: Briefcase },
     { id: "applied", label: "Applied Jobs", icon: CheckSquare },
     { id: "connect", label: "Network", icon: Users },
-    { id: "requests", label: "Requests", icon: Bell },
+    // { id: "requests", label: "Requests", icon: Bell },
     {
       id: "interviews",
       label: "Interviews",
@@ -351,38 +350,6 @@ export default function Sidebar({
           </div>
         )}
 
-        {/* Quick Actions */}
-        <div
-          className={`p-4 border-t ${
-            isDark ? "border-slate-700" : "border-slate-200"
-          }`}
-        >
-          <div
-            className={`flex items-center ${
-              isExpanded ? "space-x-2" : "flex-col space-y-2"
-            }`}
-          >
-            <button
-              className={`${
-                isExpanded ? "flex-1" : "w-full"
-              } flex items-center ${
-                isExpanded ? "justify-center space-x-2" : "justify-center"
-              } px-3 py-2.5 rounded-lg transition-colors ${
-                isDark
-                  ? "bg-slate-700 hover:bg-slate-600 text-slate-300"
-                  : "bg-slate-100 hover:bg-slate-200 text-slate-700"
-              }`}
-              title="Notifications"
-            >
-              <Bell className="w-4 h-4" />
-              {isExpanded && (
-                <span className="text-xs font-medium animate-fade-in">
-                  Alerts
-                </span>
-              )}
-            </button>
-          </div>
-        </div>
       </aside>
 
       {/* Add CSS for fade-in animation */}

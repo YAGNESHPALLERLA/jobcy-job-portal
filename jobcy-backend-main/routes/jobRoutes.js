@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { protect } = require("../middleware/authMiddleware");
-const { allowRoles } = require("../middleware/roleMiddleware");
+const { protect, allowRoles } = require("../middleware/authMiddleware");
 
 // Import job controllers
 const {
@@ -13,6 +12,7 @@ const {
   getAllJobs,
   applyForJob,
   getUserApplications,
+  getJobApplications,
 } = require("../controllers/jobController");
 
 // HR routes - for creating/managing jobs
@@ -22,14 +22,17 @@ router.put("/:id", protect, allowRoles("hr"), updateJob);
 router.delete("/:id", protect, allowRoles("hr"), deleteJob);
 router.get("/dashboard", protect, allowRoles("hr"), getDashboard);
 
-// User routes - for browsing and applying to jobs
+// Admin/User routes - for browsing jobs (specific routes must come before generic ones)
 router.get("/browse", protect, allowRoles("user", "admin"), getAllJobs);
+router.get("/my-applications", protect, allowRoles("user"), getUserApplications);
+
+// Admin route - get applications for a specific job (must come before /:id routes)
+router.get("/:jobId/applications", protect, allowRoles("admin", "hr"), getJobApplications);
+
+// User routes - for applying to jobs
 router.post("/apply/:jobId", protect, allowRoles("user"), applyForJob);
-router.get(
-  "/my-applications",
-  protect,
-  allowRoles("user"),
-  getUserApplications
-);
+
+// Admin route - get all jobs (must be last among GET routes with params)
+router.get("/", protect, allowRoles("admin"), getAllJobs);
 
 module.exports = router;

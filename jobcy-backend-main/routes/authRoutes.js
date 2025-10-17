@@ -1,28 +1,84 @@
 const express = require("express");
-const {
-  registerUser,
-  loginUserUnified, // unified login for all roles
-  registerCompany,
-  // remove separate loginCompany if unified used,
-  registerHR, // optional if you want to add HR registration here
-} = require("../controllers/authController");
-
 const router = express.Router();
 
-// User registration route
-router.post("/users/register", registerUser);
-router.post("/users/login", loginUserUnified);
+// Import controller functions
+const {
+  registerUser,
+  registerCompany,
+  registerHR,
+  loginUserUnified,
+} = require("../controllers/authController");
 
-// Unified login route for users, HRs, admins
+// Optional middlewares for protected routes
+const { protect, allowRoles } = require("../middleware/authMiddleware");
+
+/**
+ * ========================================================
+ * AUTHENTICATION ROUTES
+ * ========================================================
+ * These routes handle registration and login for:
+ * - Users (job seekers)
+ * - Companies (admins)
+ * - HRs (human resources)
+ * - Unified login for all roles
+ */
+
+// ---------------- USER ROUTES ----------------
+
+// Register a new user
+// Frontend: /user/auth/signup
+// Backend:  POST /api/auth/user/register
+router.post("/user/register", registerUser);
+
+// User login (can also use unified login below)
+// Frontend: /user/auth/login
+// Backend:  POST /api/auth/user/login
+router.post("/user/login", loginUserUnified);
+
+// ---------------- COMPANY (ADMIN) ROUTES ----------------
+
+// Register a new company (admin account)
+// Frontend: /admin/auth/signup
+// Backend:  POST /api/auth/company/register
+router.post("/company/register", registerCompany);
+
+// Admin login (can also use unified login below)
+// Frontend: /admin/auth/login
+// Backend:  POST /api/auth/company/login or /api/auth/login
+router.post("/company/login", loginUserUnified);
+
+// ---------------- HR ROUTES ----------------
+
+// Register HR (optional — can be created by admin or self)
+// Frontend: /hr/auth/signup
+// Backend:  POST /api/auth/hr/register
+router.post("/hr/register", registerHR);
+
+// HR login (also handled by unified login)
+// Frontend: /hr/auth/login
+// Backend:  POST /api/auth/hr/login or /api/auth/login
+router.post("/hr/login", loginUserUnified);
+
+// ---------------- UNIFIED LOGIN ----------------
+// This allows all roles (user, HR, admin) to log in via one endpoint
+// Frontend: any login form
+// Backend:  POST /api/auth/login
 router.post("/login", loginUserUnified);
 
-// Optional: Admin registration (company)
-router.post("/companies/register", registerCompany);
+/**
+ * ========================================================
+ * ADMIN-ONLY ACTIONS (OPTIONAL)
+ * ========================================================
+ * These routes require authentication and specific roles.
+ * Uncomment these if you implement role-based access.
+ */
 
-// Optionally, if separate admin login remains, keep or remove:
-// router.post("/companies/login", loginCompany);
-
-// Optional: Admin-only route to register HR users
-// router.post("/admin/register-hr", protect, allowRoles("admin"), registerHR);
+// Example: Admin registers new HRs directly
+// router.post(
+//   "/admin/register-hr",
+//   protect,
+//   allowRoles("admin"),
+//   registerHR
+// );
 
 module.exports = router;

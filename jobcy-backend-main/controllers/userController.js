@@ -21,6 +21,7 @@ exports.updateUserProfile = async (req, res) => {
       company,
       languages,
       education,
+      experienceList,
       projects,
       personalDetails,
       dob,
@@ -30,6 +31,17 @@ exports.updateUserProfile = async (req, res) => {
       nationality,
     } = req.body;
 
+    console.log("📝 Updating user profile with data:", {
+      name,
+      email: email ? "***" : undefined,
+      skills: skills?.length,
+      languages: languages?.length,
+      education: education?.length,
+      experienceList: experienceList?.length,
+      projects: projects?.length,
+      personalDetails: personalDetails?.length,
+    });
+
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -38,15 +50,16 @@ exports.updateUserProfile = async (req, res) => {
     if (careerStatus) user.careerStatus = careerStatus;
     if (title) user.title = title;
     if (bio) user.bio = bio;
-    if (skills) user.skills = skills;
+    if (skills !== undefined) user.skills = skills;
     if (professionalRole) user.professionalRole = professionalRole;
     if (currentLocation) user.currentLocation = currentLocation;
     if (currentCTC) user.currentCTC = currentCTC;
     if (company) user.company = company;
-    if (languages) user.languages = languages;
-    if (education) user.education = education;
-    if (projects) user.projects = projects;
-    if (personalDetails) user.personalDetails = personalDetails;
+    if (languages !== undefined) user.languages = languages;
+    if (education !== undefined) user.education = education;
+    if (experienceList !== undefined) user.experienceList = experienceList;
+    if (projects !== undefined) user.projects = projects;
+    if (personalDetails !== undefined) user.personalDetails = personalDetails;
 
     // Handle individual personal details fields
     if (dob !== undefined || gender !== undefined || category !== undefined || maritalStatus !== undefined || nationality !== undefined) {
@@ -67,16 +80,40 @@ exports.updateUserProfile = async (req, res) => {
 
     await user.save();
 
+    console.log("✅ User profile saved successfully");
+    console.log("📊 Saved data counts:", {
+      skills: user.skills?.length || 0,
+      languages: user.languages?.length || 0,
+      education: user.education?.length || 0,
+      experienceList: user.experienceList?.length || 0,
+      projects: user.projects?.length || 0,
+      personalDetails: user.personalDetails?.length || 0,
+    });
+
+    // Return complete user profile data
     res.json({
       message: "Profile updated successfully",
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        professionalRole: user.professionalRole,
-        currentLocation: user.currentLocation,
-        currentCTC: user.currentCTC,
-      },
+      _id: user._id,
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      mobile: user.mobile,
+      professionalRole: user.professionalRole,
+      title: user.title,
+      currentLocation: user.currentLocation,
+      currentCTC: user.currentCTC,
+      bio: user.bio,
+      skills: user.skills || [],
+      languages: user.languages || [],
+      education: user.education || [],
+      projects: user.projects || [],
+      experienceList: user.experienceList || [],
+      personalDetails: user.personalDetails || [],
+      company: user.company,
+      careerStatus: user.careerStatus,
+      profileCompletion: user.profileCompletion,
+      connections: user.connections,
+      resume: user.resume,
     });
   } catch (error) {
     console.error("Error updating user profile:", error);

@@ -401,12 +401,12 @@ const getStatusIcon = (status: "pending" | "shortlisted" | "rejected") => {
 
   // Application card component
   const ApplicationCard = ({ application }: {application: Application}) => (
-    <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-slate-200 rounded-lg p-4 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center space-x-3 mb-3">
-            <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
-              <User className="w-6 h-6 text-indigo-600" />
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-200 to-indigo-200 rounded-full flex items-center justify-center">
+              <User className="w-6 h-6 text-blue-700" />
             </div>
             <div>
               <h4 className="font-semibold text-gray-900">
@@ -477,7 +477,7 @@ const getStatusIcon = (status: "pending" | "shortlisted" | "rejected") => {
               setSelectedApplicant(application);
               setShowModal(true);
             }}
-            className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
             title="View Details"
           >
             <Eye className="w-4 h-4" />
@@ -492,7 +492,7 @@ const getStatusIcon = (status: "pending" | "shortlisted" | "rejected") => {
                       Authorization: `Bearer ${token}`,
                     },
                   });
-
+  
                   if (response.ok) {
                     const blob = await response.blob();
                     const url = window.URL.createObjectURL(blob);
@@ -510,7 +510,7 @@ const getStatusIcon = (status: "pending" | "shortlisted" | "rejected") => {
                   alert('Error downloading resume. Please try again.');
                 }
               }}
-              className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+              className="p-2 text-cyan-600 hover:bg-cyan-50 rounded-lg transition-colors"
               title="Download Resume"
             >
               <Download className="w-4 h-4" />
@@ -589,7 +589,7 @@ const getStatusIcon = (status: "pending" | "shortlisted" | "rejected") => {
             setSelectedApplicant(application);
             setShowModal(true);
           }}
-          className="text-indigo-600 hover:text-indigo-800 text-sm font-medium transition-colors"
+          className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors"
         >
           View Details
         </button>
@@ -613,8 +613,8 @@ const getStatusIcon = (status: "pending" | "shortlisted" | "rejected") => {
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center space-x-4">
-                <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center">
-                  <User className="w-8 h-8 text-indigo-600" />
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-200 to-indigo-200 rounded-full flex items-center justify-center">
+                  <User className="w-8 h-8 text-blue-700" />
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900">
@@ -693,7 +693,7 @@ const getStatusIcon = (status: "pending" | "shortlisted" | "rejected") => {
                 {applicant.skills.map((skill, index) => (
                   <span
                     key={index}
-                    className="px-3 py-1 bg-indigo-100 text-indigo-800 text-sm rounded-full"
+                    className="px-3 py-1 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 text-sm rounded-full"
                   >
                     {skill}
                   </span>
@@ -740,7 +740,7 @@ const getStatusIcon = (status: "pending" | "shortlisted" | "rejected") => {
                       alert('Error downloading resume. Please try again.');
                     }
                   }}
-                  className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                  className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg transition-colors"
                 >
                   <Download className="w-4 h-4" />
                   <span>Download Resume ({applicant.resumeUrl || 'resume.pdf'})</span>
@@ -756,7 +756,7 @@ const getStatusIcon = (status: "pending" | "shortlisted" | "rejected") => {
                       updateApplicationStatus(applicant.id, "shortlisted");
                       onClose();
                     }}
-                    className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                    className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg transition-colors"
                   >
                     <CheckCircle className="w-4 h-4" />
                     <span>Shortlist</span>
@@ -787,9 +787,9 @@ const getStatusIcon = (status: "pending" | "shortlisted" | "rejected") => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-cyan-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
+      <header className="bg-gradient-to-r from-blue-100/90 via-indigo-100/90 to-cyan-100/90 backdrop-blur-xl shadow-lg border-b border-slate-200/60">
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -826,14 +826,14 @@ const getStatusIcon = (status: "pending" | "shortlisted" | "rejected") => {
                   placeholder="Search applicants..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 w-full sm:w-64"
+                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-black text-white focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 w-full sm:w-64"
                   aria-label="Search applicants"
                 />
               </div>
               <select
                 value={selectedJob}
                 onChange={(e) => setSelectedJob(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
+                className="border border-gray-300 rounded-lg px-3 py-2 bg-black text-white focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500"
                 aria-label="Filter by job"
               >
                 <option value="all">All Jobs</option>
@@ -849,7 +849,7 @@ const getStatusIcon = (status: "pending" | "shortlisted" | "rejected") => {
                   setSelectedStatus(e.target.value as "pending" | "shortlisted" | "rejected" | "all")
                 }
 
-                className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
+                className="border border-gray-300 rounded-lg px-3 py-2 bg-black text-white focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500"
                 aria-label="Filter by status"
               >
                 <option value="all">All Status</option>
@@ -896,8 +896,8 @@ const getStatusIcon = (status: "pending" | "shortlisted" | "rejected") => {
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
-                        <div className="p-2 bg-indigo-100 rounded-lg">
-                          <Briefcase className="w-5 h-5 text-indigo-600" />
+                        <div className="p-2 bg-gradient-to-br from-blue-200 to-indigo-200 rounded-lg">
+                          <Briefcase className="w-5 h-5 text-blue-700" />
                         </div>
                         <div>
                           <h2 className="text-lg font-semibold text-gray-900">

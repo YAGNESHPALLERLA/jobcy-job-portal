@@ -29,7 +29,7 @@ interface ProfileTabProps {
   education: Education[];
   experience: Experience[];
   isDark: boolean;
-  onEditProfile: () => void;
+  onEditProfile: (section?: string) => void;
   updateProfile?: (data: Partial<UserProfile>) => Promise<{ success: boolean; message?: string; data?: UserProfile }>;
 }
 export default function ProfileTab({
@@ -83,7 +83,7 @@ export default function ProfileTab({
                 </p>
               </div>
               <button
-                onClick={onEditProfile}
+                onClick={() => onEditProfile("personal")}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 font-medium"
               >
                 <Edit className="w-4 h-4" />
@@ -276,7 +276,7 @@ export default function ProfileTab({
             About Me
           </h3>
           <button
-            onClick={onEditProfile}
+            onClick={() => onEditProfile("personal")}
             className="text-blue-600 hover:text-blue-700 text-sm font-semibold transition-colors"
           >
             Edit
@@ -321,14 +321,14 @@ export default function ProfileTab({
             Skills & Expertise
           </h3>
           <button
-            onClick={onEditProfile}
+            onClick={() => onEditProfile("skills")}
             className="text-blue-600 hover:text-blue-700 text-sm font-semibold transition-colors"
           >
             + Add Skill
           </button>
         </div>
         <div className="flex flex-wrap gap-3">
-          {userProfile.skills?.map((skill: Skill, index: number) => (
+          {userProfile.skills?.map((skill: string, index: number) => (
   <span
     key={index}
     className={`px-4 py-2 ${
@@ -362,7 +362,7 @@ export default function ProfileTab({
             Projects
           </h3>
           <button
-            onClick={onEditProfile}
+            onClick={() => onEditProfile("projects")}
             className="text-blue-600 hover:text-blue-700 text-sm font-semibold transition-colors"
           >
             + Add Project
@@ -426,7 +426,7 @@ export default function ProfileTab({
             Education
           </h3>
           <button
-            onClick={onEditProfile}
+            onClick={() => onEditProfile("education")}
             className="text-blue-600 hover:text-blue-700 text-sm font-semibold transition-colors"
           >
             + Add Education
@@ -435,8 +435,8 @@ export default function ProfileTab({
         <div className="space-y-6">
           {education.map((edu: Education, index: number) => (
             <div
-              key={edu.id}
-              className={`${index !== 0 ? "border-t pt-6" : ""} ${
+              key={edu.id || `edu-${index}`}
+              className={`border-t pt-6 ${
                 isDark ? "border-slate-700" : "border-slate-200"
               }`}
             >
@@ -492,7 +492,7 @@ export default function ProfileTab({
             Work Experience
           </h3>
           <button
-            onClick={onEditProfile}
+            onClick={() => onEditProfile("experience")}
             className="text-blue-600 hover:text-blue-700 text-sm font-semibold transition-colors"
           >
             + Add Experience
@@ -501,8 +501,8 @@ export default function ProfileTab({
         <div className="space-y-6">
           {experience.map((exp: Experience, index: number) => (
             <div
-              key={exp.id}
-              className={`${index !== 0 ? "border-t pt-6" : ""} ${
+              key={exp.id || `exp-${index}`}
+              className={`border-t pt-6 ${
                 isDark ? "border-slate-700" : "border-slate-200"
               }`}
             >
@@ -566,14 +566,14 @@ export default function ProfileTab({
             Personal Details
           </h3>
           <button
-            onClick={onEditProfile}
+            onClick={() => onEditProfile("details")}
             className="text-blue-600 hover:text-blue-700 text-sm font-semibold transition-colors"
           >
             Edit
           </button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
+          <div key="dob">
             <p
               className={`text-xs ${
                 isDark ? "text-slate-400" : "text-slate-500"
@@ -589,7 +589,7 @@ export default function ProfileTab({
               {userProfile.dob || "Not provided"}
             </p>
           </div>
-          <div>
+          <div key="gender">
             <p
               className={`text-xs ${
                 isDark ? "text-slate-400" : "text-slate-500"
@@ -605,7 +605,7 @@ export default function ProfileTab({
               {userProfile.gender || "Not specified"}
             </p>
           </div>
-          <div>
+          <div key="category">
             <p
               className={`text-xs ${
                 isDark ? "text-slate-400" : "text-slate-500"
@@ -621,7 +621,7 @@ export default function ProfileTab({
               {userProfile.category || "Not specified"}
             </p>
           </div>
-          <div>
+          <div key="marital">
             <p
               className={`text-xs ${
                 isDark ? "text-slate-400" : "text-slate-500"
@@ -658,7 +658,7 @@ export default function ProfileTab({
             Languages
           </h3>
           <button
-            onClick={onEditProfile}
+            onClick={() => onEditProfile("languages")}
             className="text-blue-600 hover:text-blue-700 text-sm font-semibold transition-colors"
           >
             + Add Language
@@ -666,8 +666,9 @@ export default function ProfileTab({
         </div>
         {userProfile.languages && userProfile.languages.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {userProfile.languages.map((lang: Language, index: number) => (              <div
-                key={index}
+            {userProfile.languages.map((lang: Language, index: number) => (
+              <div
+                key={`lang-${index}`}
                 className={`p-4 ${
                   isDark ? "bg-slate-700" : "bg-slate-50"
                 } rounded-lg`}

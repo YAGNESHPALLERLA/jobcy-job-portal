@@ -12,8 +12,7 @@ const {
   getRecentActivity,
   getAllApplications,
 } = require("../controllers/adminController");
-const { protect } = require("../middleware/authMiddleware"); // unified middleware
-const { allowRoles } = require("../middleware/roleMiddleware");
+const { protect, allowRoles } = require("../middleware/authMiddleware"); // unified middleware
 
 router.post(
   "/admin/register-hr",

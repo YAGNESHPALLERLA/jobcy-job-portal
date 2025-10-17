@@ -11,8 +11,7 @@ const {
   getUserNotifications,
   markNotificationAsRead,
 } = require("../controllers/userController");
-const { protect } = require("../middleware/authMiddleware");
-const { allowRoles } = require("../middleware/roleMiddleware");
+const { protect, allowRoles } = require("../middleware/authMiddleware");
 
 router.get("/me", protect, allowRoles("user"), getUserProfile);
 router.put("/me", protect, allowRoles("user"), updateUserProfile);

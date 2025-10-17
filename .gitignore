@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.*
+
+# Environment variables
+.env
+.env.local
+.env*.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# OS
+.DS_Store
+*.pem
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Testing
+coverage/
+
+# Uploads (user-uploaded files should not be committed)
+jobcy-backend-main/uploads/resumes/*.pdf
+
+# Keep the directory structure but ignore files
+!jobcy-backend-main/uploads/resumes/.gitkeep
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+

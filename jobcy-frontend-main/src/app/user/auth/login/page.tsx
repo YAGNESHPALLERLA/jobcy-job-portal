@@ -106,7 +106,7 @@ export default function UserLogin() {
             Welcome Back
           </h1>
           <p className="text-slate-600 dark:text-slate-400">
-            Sign in to continue your job search
+            Sign in to continue to your dashboard
           </p>
         </div>
 

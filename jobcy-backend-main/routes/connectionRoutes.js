@@ -8,8 +8,7 @@ const {
   rejectConnectionRequest,
   getUserConnections,
 } = require("../controllers/connectionController");
-const { protect } = require("../middleware/authMiddleware");
-const { allowRoles } = require("../middleware/roleMiddleware");
+const { protect, allowRoles } = require("../middleware/authMiddleware");
 
 // Send connection request
 router.post("/send", protect, allowRoles("user", "hr", "admin"), sendConnectionRequest);

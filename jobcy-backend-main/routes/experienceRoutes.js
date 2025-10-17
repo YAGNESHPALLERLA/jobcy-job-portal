@@ -6,8 +6,7 @@ const {
   updateExperience,
   deleteExperience,
 } = require("../controllers/experienceController");
-const { protect } = require("../middleware/authMiddleware"); // unified protect middleware
-const { allowRoles } = require("../middleware/roleMiddleware");
+const { protect, allowRoles } = require("../middleware/authMiddleware"); // unified protect middleware
 
 router.post("/experience", protect, allowRoles("user"), addExperience);
 router.get("/experience", protect, allowRoles("user"), getExperience);

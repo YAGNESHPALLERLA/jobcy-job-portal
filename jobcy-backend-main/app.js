@@ -10,6 +10,9 @@ const educationRoutes = require("./routes/educationRoutes");
 const experienceRoutes = require("./routes/experienceRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
 const connectionRoutes = require("./routes/connectionRoutes");
+const chatRoutes = require("./routes/chatRoutes");
+const companyRoutes = require("./routes/companyRoutes");
+const companyDashboardRoutes = require("./routes/companyDashboardRoutes");
 
 require("dotenv").config();
 
@@ -33,5 +36,8 @@ app.use("/api", educationRoutes);
 app.use("/api", experienceRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/connections", connectionRoutes);
+app.use("/api/chat", chatRoutes);
+app.use("/api/admin/companies", companyRoutes);
+app.use("/api/company", companyDashboardRoutes);
 
 module.exports = app;

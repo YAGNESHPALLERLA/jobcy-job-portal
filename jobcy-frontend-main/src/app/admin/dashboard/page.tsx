@@ -327,13 +327,13 @@ export default function AdminDashboard() {
         isDarkMode
           ? "bg-gray-800 border-gray-700 hover:border-emerald-600"
           : "bg-white border-gray-200 hover:border-emerald-500"
-      } rounded-xl p-6 shadow-sm border hover:shadow-md transition-all cursor-pointer ${
+      } rounded-xl p-6 shadow-sm border hover:shadow-lg transition-all cursor-pointer group ${
         onClick ? "hover:scale-105 transform" : ""
       }`}
       onClick={onClick}
     >
       <div className="flex items-center justify-between">
-        <div>
+        <div className="flex-1">
           <p
             className={`${
               isDarkMode ? "text-gray-400" : "text-gray-600"
@@ -356,8 +356,16 @@ export default function AdminDashboard() {
               </span>
             </div>
           )}
+          {onClick && (
+            <div className={`flex items-center mt-3 text-xs font-semibold ${
+              isDarkMode ? "text-emerald-400" : "text-emerald-600"
+            } opacity-0 group-hover:opacity-100 transition-opacity`}>
+              <span>View Details</span>
+              <ArrowUpRight className="w-3 h-3 ml-1" />
+            </div>
+          )}
         </div>
-        <div className={`p-3 rounded-full ${color}`}>
+        <div className={`p-3 rounded-full ${color} group-hover:scale-110 transition-transform`}>
           <Icon className="w-6 h-6 text-white" />
         </div>
       </div>
@@ -629,7 +637,7 @@ export default function AdminDashboard() {
                       change="12"
                       icon={Users}
                       color="bg-blue-500"
-                      onClick={() => alert("Navigate to HR Management")}
+                      onClick={() => setActiveTab("users")}
                     />
                     <StatCard
                       title="Jobs Posted by HRs"
@@ -637,7 +645,7 @@ export default function AdminDashboard() {
                       change="8"
                       icon={Briefcase}
                       color="bg-emerald-500"
-                      onClick={() => alert("Navigate to Jobs Management")}
+                      onClick={() => setActiveTab("jobs")}
                     />
                     <StatCard
                       title="Applications Received"
@@ -645,7 +653,7 @@ export default function AdminDashboard() {
                       change="23"
                       icon={FileText}
                       color="bg-amber-500"
-                      onClick={() => alert("Navigate to Applications")}
+                      onClick={() => setActiveTab("applications")}
                     />
                     <StatCard
                       title="Active Job Listings"
@@ -710,7 +718,7 @@ export default function AdminDashboard() {
                             description="Manage company registrations and profiles"
                             icon={Building2}
                             color="bg-red-500"
-                            onClick={() => alert("Navigate to Company Management")}
+                            onClick={() => router.push("/admin/company-management")}
                           />
                         </div>
                       </div>

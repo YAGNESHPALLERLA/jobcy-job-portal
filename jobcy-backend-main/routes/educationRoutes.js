@@ -6,8 +6,7 @@ const {
   updateEducation,
   deleteEducation,
 } = require("../controllers/educationController");
-const { protect } = require("../middleware/authMiddleware"); // unified protect middleware
-const { allowRoles } = require("../middleware/roleMiddleware");
+const { protect, allowRoles } = require("../middleware/authMiddleware"); // unified protect middleware
 
 router.post("/", protect, allowRoles("user"), addEducation);
 router.get("/", protect, allowRoles("user"), getEducation);
