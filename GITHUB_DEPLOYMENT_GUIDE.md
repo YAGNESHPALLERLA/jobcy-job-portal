@@ -265,6 +265,8 @@ Track version changes:
 
 ### Frontend Deployment (Vercel)
 
+**⚠️ IMPORTANT:** Read `DEPLOYMENT_NOT_FOUND_FIX.md` for configuration best practices!
+
 ```bash
 # Install Vercel CLI
 npm i -g vercel
@@ -273,6 +275,11 @@ npm i -g vercel
 cd jobcy-frontend-main
 vercel
 ```
+
+**Common Issues:**
+- If you get `DEPLOYMENT_NOT_FOUND` error, see: `DEPLOYMENT_NOT_FOUND_FIX.md`
+- Keep `vercel.json` minimal (avoid over-configuration)
+- Don't use `output: 'standalone'` for Vercel deployments
 
 ### Backend Deployment (Railway/Render/Heroku)
 
