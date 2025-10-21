@@ -56,9 +56,9 @@ export default function UserLogin() {
     setLoginError("");
 
     try {
-      console.log("Login URL:", `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`);
+      console.log("Login URL:", `${process.env.NEXT_PUBLIC_API_URL}/auth/login`);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
