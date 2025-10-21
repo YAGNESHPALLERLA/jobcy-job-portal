@@ -176,3 +176,6 @@ Set-Service -Name MongoDB -StartupType Automatic
 
 Now MongoDB will start whenever Windows starts!
 
+
+
+
