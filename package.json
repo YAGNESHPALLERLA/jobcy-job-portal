@@ -1,0 +1,29 @@
+{
+  "name": "jobcy-job-portal",
+  "version": "1.0.0",
+  "description": "Job Portal Application with Frontend and Backend",
+  "private": true,
+  "scripts": {
+    "start": "cd jobcy-backend-main && npm start",
+    "build": "cd jobcy-backend-main && npm install",
+    "dev": "cd jobcy-backend-main && npm run dev",
+    "install-backend": "cd jobcy-backend-main && npm install",
+    "install-frontend": "cd jobcy-frontend-main && npm install",
+    "build-frontend": "cd jobcy-frontend-main && npm run build",
+    "start-frontend": "cd jobcy-frontend-main && npm start"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "keywords": [
+    "job-portal",
+    "nodejs",
+    "express",
+    "mongodb",
+    "nextjs",
+    "react"
+  ],
+  "author": "Karthik",
+  "license": "MIT"
+}

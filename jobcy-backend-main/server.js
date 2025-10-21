@@ -7,9 +7,20 @@ const jwt = require("jsonwebtoken");
 const User = require("./models/User");
 
 const startServer = async () => {
-  await connectDB();
+  try {
+    console.log("🚀 Starting server...");
+    console.log("🌍 Environment:", process.env.NODE_ENV || "development");
+    console.log("🔗 Connecting to database...");
+    
+    await connectDB();
+    console.log("✅ Database connected successfully");
+  } catch (error) {
+    console.error("❌ Failed to start server:", error.message);
+    console.error("🔍 Full error:", error);
+    process.exit(1);
+  }
 
-  const PORT = process.env.PORT || 5000;
+  const PORT = process.env.PORT || 3001;
   const server = http.createServer(app);
   
   // Initialize Socket.IO
@@ -127,9 +138,31 @@ const startServer = async () => {
     });
   });
 
-  server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-    console.log(`Socket.IO server ready`);
+  server.listen(PORT, "0.0.0.0", () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`🔌 Socket.IO server ready`);
+    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`📊 Health check available at: http://localhost:${PORT}/health`);
+    console.log(`🌐 Server bound to 0.0.0.0:${PORT} (accessible from outside)`);
+    
+    // Add a small delay to ensure server is fully ready
+    setTimeout(() => {
+      console.log("✅ Server is fully ready and accepting connections");
+    }, 1000);
+  });
+
+  // Handle server errors
+  server.on('error', (error) => {
+    console.error('❌ Server error:', error);
+  });
+
+  // Graceful shutdown
+  process.on('SIGTERM', () => {
+    console.log('🛑 SIGTERM received, shutting down gracefully');
+    server.close(() => {
+      console.log('✅ Server closed');
+      process.exit(0);
+    });
   });
 };
 
