@@ -23,7 +23,8 @@ connectDB();
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:3001',
-  process.env.FRONTEND_URL, // Your Vercel URL
+  // process.env.FRONTEND_URL,
+   'https://jobcy-job-portal.vercel.app'
 ];
 
 // Allow all Vercel preview deployments
