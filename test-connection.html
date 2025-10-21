@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connection Test - Job Portal</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .loading { background-color: #fff3cd; border-color: #ffeaa7; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Job Portal Connection Test</h1>
+    <p>Use this page to test your Railway backend connection.</p>
+    
+    <div class="test">
+        <h3>1. Enter Your Railway Backend URL</h3>
+        <input type="text" id="backendUrl" placeholder="https://your-railway-app.railway.app" style="width: 400px; padding: 8px;">
+        <button onclick="testConnection()">Test Connection</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        function testConnection() {
+            const backendUrl = document.getElementById('backendUrl').value;
+            const resultsDiv = document.getElementById('results');
+            
+            if (!backendUrl) {
+                alert('Please enter your Railway backend URL');
+                return;
+            }
+
+            resultsDiv.innerHTML = '<div class="test loading">🔄 Testing connection...</div>';
+            
+            // Test 1: Health Check
+            testHealthCheck(backendUrl);
+            
+            // Test 2: API Root
+            testApiRoot(backendUrl);
+            
+            // Test 3: Login Endpoint
+            testLoginEndpoint(backendUrl);
+        }
+
+        async function testHealthCheck(url) {
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                const response = await fetch(`${url}/health`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultsDiv.innerHTML += `
+                        <div class="test success">
+                            <h4>✅ Health Check - SUCCESS</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML += `
+                        <div class="test error">
+                            <h4>❌ Health Check - FAILED</h4>
+                            <p>Status: ${response.status}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML += `
+                    <div class="test error">
+                        <h4>❌ Health Check - ERROR</h4>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testApiRoot(url) {
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultsDiv.innerHTML += `
+                        <div class="test success">
+                            <h4>✅ API Root - SUCCESS</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML += `
+                        <div class="test error">
+                            <h4>❌ API Root - FAILED</h4>
+                            <p>Status: ${response.status}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML += `
+                    <div class="test error">
+                        <h4>❌ API Root - ERROR</h4>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testLoginEndpoint(url) {
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                const response = await fetch(`${url}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: 'test@example.com', password: 'test' })
+                });
+                const data = await response.json();
+                
+                if (response.status === 400 && data.error === 'Email and password are required.') {
+                    resultsDiv.innerHTML += `
+                        <div class="test success">
+                            <h4>✅ Login Endpoint - SUCCESS</h4>
+                            <p>Endpoint is working (returned expected validation error)</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML += `
+                        <div class="test error">
+                            <h4>❌ Login Endpoint - UNEXPECTED RESPONSE</h4>
+                            <p>Status: ${response.status}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML += `
+                    <div class="test error">
+                        <h4>❌ Login Endpoint - ERROR</h4>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
