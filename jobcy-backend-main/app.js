@@ -44,6 +44,25 @@ app.use(cors({
 
 app.use(express.json());
 
+// Health check endpoint for Railway
+app.get("/", (req, res) => {
+  res.status(200).json({
+    status: "OK",
+    message: "Job Portal API is running",
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || "development"
+  });
+});
+
+// Health check endpoint for Railway
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "healthy",
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Serve static files from uploads directory
 app.use("/uploads", express.static("uploads"));
 

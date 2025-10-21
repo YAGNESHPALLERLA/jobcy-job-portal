@@ -9,7 +9,7 @@ const User = require("./models/User");
 const startServer = async () => {
   await connectDB();
 
-  const PORT = process.env.PORT || 5000;
+  const PORT = process.env.PORT || 3001;
   const server = http.createServer(app);
   
   // Initialize Socket.IO
@@ -127,9 +127,25 @@ const startServer = async () => {
     });
   });
 
-  server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-    console.log(`Socket.IO server ready`);
+  server.listen(PORT, "0.0.0.0", () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`🔌 Socket.IO server ready`);
+    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`📊 Health check available at: http://localhost:${PORT}/health`);
+  });
+
+  // Handle server errors
+  server.on('error', (error) => {
+    console.error('❌ Server error:', error);
+  });
+
+  // Graceful shutdown
+  process.on('SIGTERM', () => {
+    console.log('🛑 SIGTERM received, shutting down gracefully');
+    server.close(() => {
+      console.log('✅ Server closed');
+      process.exit(0);
+    });
   });
 };
 
