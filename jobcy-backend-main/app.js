@@ -20,41 +20,45 @@ const app = express();
 connectDB();
 
 // CORS configuration for production
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://localhost:3001',
-  // process.env.FRONTEND_URL,
-   'https://jobcy-job-portal.vercel.app'
-];
+// const allowedOrigins = [
+//   'http://localhost:3000',
+//   'http://localhost:3001',
+//   // process.env.FRONTEND_URL,
+//    'https://jobcy-job-portal.vercel.app'
+// ];
 
 // Allow all Vercel preview deployments
-app.use(cors({
-  origin: function (origin, callback) {
-    console.log('CORS request from origin:', origin);
+// app.use(cors({
+//   origin: function (origin, callback) {
+//     console.log('CORS request from origin:', origin);
     
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) {
-      console.log('No origin provided, allowing request');
-      return callback(null, true);
-    }
+//     // Allow requests with no origin (like mobile apps or curl requests)
+//     if (!origin) {
+//       console.log('No origin provided, allowing request');
+//       return callback(null, true);
+//     }
     
-    // Check if origin is in allowed origins or is a Vercel preview deployment
-    if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
-      console.log('Origin allowed:', origin);
-      callback(null, true);
-    } else {
-      console.log('Origin blocked:', origin);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  exposedHeaders: ['Content-Length', 'X-Foo', 'X-Bar']
-}));
+//     // Check if origin is in allowed origins or is a Vercel preview deployment
+//     if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+//       console.log('Origin allowed:', origin);
+//       callback(null, true);
+//     } else {
+//       console.log('Origin blocked:', origin);
+//       callback(new Error('Not allowed by CORS'));
+//     }
+//   },
+//   credentials: true,
+//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+//   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+//   exposedHeaders: ['Content-Length', 'X-Foo', 'X-Bar']
+// }));
 
 app.use(express.json());
-
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  credentials: true
+}));
 // Health check endpoint for Railway
 app.get("/", (req, res) => {
   res.status(200).json({
