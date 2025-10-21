@@ -1,4 +1,4 @@
-require("dotenv").config();
+// require("dotenv").config();
 const http = require("http");
 const socketIo = require("socket.io");
 const connectDB = require("./config/db");
